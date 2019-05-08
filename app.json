@@ -1,0 +1,15 @@
+{
+    "id": "3c3ed60d-774b-4d1c-a547-6fc42a5a87c6",
+    "version": "0.0.1",
+    "requiredApiVersion": "^1.4.0",
+    "iconFile": "icon.png",
+    "author": {
+        "name": "Douglas Gubert",
+        "homepage": "https://twitter.com/d_gubert",
+        "support": "page"
+    },
+    "name": "Apps.Github",
+    "nameSlug": "appsgithub",
+    "classFile": "AppsGithubApp.ts",
+    "description": "Integrates GitHub with your Rocket.Chat"
+}
