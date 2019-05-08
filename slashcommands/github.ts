@@ -53,10 +53,6 @@ export class GithubSlashcommand implements ISlashCommand {
             return;
         }
 
-        const persistence = new AppPersistence(persis, read.getPersistenceReader());
-
-        await persistence.connectRepoToRoom(repoName, context.getRoom());
-
         await sendNotification('Successfully connected repo', read, modify, context.getSender(), context.getRoom());
     }
 }
