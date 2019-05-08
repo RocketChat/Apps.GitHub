@@ -43,8 +43,6 @@ export class GithubSlashcommand implements ISlashCommand {
             return;
         }
 
-        const persistence = new AppPersistence(persis, read.getPersistenceReader());
-
         const sdk = new GithubSDK(http);
 
         try {
@@ -54,6 +52,8 @@ export class GithubSlashcommand implements ISlashCommand {
             await sendNotification('Error connecting to the repo', read, modify, context.getSender(), context.getRoom());
             return;
         }
+
+        const persistence = new AppPersistence(persis, read.getPersistenceReader());
 
         await persistence.connectRepoToRoom(repoName, context.getRoom());
 
