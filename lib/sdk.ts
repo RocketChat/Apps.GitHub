@@ -4,7 +4,7 @@ const BaseHost = 'https://github.com/';
 const BaseApiHost = 'https://api.github.com/repos/';
 
 export class GithubSDK {
-    constructor(private readonly http: IHttp) {}
+    constructor(private readonly http: IHttp, private readonly accessToken) {}
 
     public createWebhook(repoName: string, webhookUrl: string) {
         return this.post(BaseApiHost + repoName + '/hooks', {
@@ -20,7 +20,7 @@ export class GithubSDK {
     private async post(url: string, data: any): Promise<any> {
         const response = await this.http.post(url, {
             headers: {
-                'Authorization': `Bearer c2b98438c30da75d194b4323ada5d860428b98f2`,
+                'Authorization': `Bearer ${this.accessToken}`,
                 'Content-Type': 'application/json',
                 'User-Agent': 'Rocket.Chat-Apps-Engine',
             },

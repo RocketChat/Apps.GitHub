@@ -8,6 +8,7 @@ import { getRepoName, GithubSDK } from '../lib/sdk';
 
 enum Command {
     Connect = 'connect',
+    SetToken = 'set-token',
 }
 
 export class GithubSlashcommand implements ISlashCommand {
@@ -24,6 +25,10 @@ export class GithubSlashcommand implements ISlashCommand {
         switch (command) {
             case Command.Connect:
                 await this.processConnectCommand(context, read, modify, http, persis);
+                break;
+
+            case Command.SetToken:
+                await this.processSetTokenCommand(context, read, modify, http, persis);
                 break;
         }
     }
@@ -44,8 +49,20 @@ export class GithubSlashcommand implements ISlashCommand {
         }
 
         const persistence = new AppPersistence(persis, read.getPersistenceReader());
+        const accessToken = await persistence.getUserAccessToken(context.getSender());
 
-        const sdk = new GithubSDK(http);
+        if (!accessToken) {
+            await sendNotification(
+                'You haven\'t configured your access key yet. Please run `/github set-token YOUR_ACCESS_TOKEN`',
+                read,
+                modify,
+                context.getSender(),
+                context.getRoom(),
+            );
+            return;
+        }
+
+        const sdk = new GithubSDK(http, accessToken);
 
         try {
             await sdk.createWebhook(repoName, await getWebhookUrl(this.app));
@@ -58,5 +75,20 @@ export class GithubSlashcommand implements ISlashCommand {
         await persistence.connectRepoToRoom(repoName, context.getRoom());
 
         await sendNotification('Successfully connected repo', read, modify, context.getSender(), context.getRoom());
+    }
+
+    private async processSetTokenCommand(context: SlashCommandContext, read: IRead, modify: IModify, http: IHttp, persis: IPersistence): Promise<void> {
+        const [, accessToken] = context.getArguments();
+
+        if (!accessToken) {
+            await sendNotification('Usage: `/github set-token ACCESS_TOKEN`', read, modify, context.getSender(), context.getRoom());
+            return;
+        }
+
+        const persistence = new AppPersistence(persis, read.getPersistenceReader());
+
+        await persistence.setUserAccessToken(accessToken, context.getSender());
+
+        await sendNotification('Successfully stored your key', read, modify, context.getSender(), context.getRoom());
     }
 }
