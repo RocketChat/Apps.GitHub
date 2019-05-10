@@ -1,0 +1,4 @@
+{
+    "slashcommand_params": "connect REPO_URL, set-token TOKEN",
+    "slashcommand_description": "Interacts with the Github App"
+}

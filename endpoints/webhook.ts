@@ -1,6 +1,6 @@
 import { IHttp, IModify, IPersistence, IRead } from '@rocket.chat/apps-engine/definition/accessors';
 import { ApiEndpoint, IApiEndpointInfo, IApiRequest, IApiResponse } from '@rocket.chat/apps-engine/definition/api';
-import { IRoom } from '@rocket.chat/apps-engine/definition/rooms';
+import { AppPersistence } from '../lib/persistence';
 
 export class WebhookEndpoint extends ApiEndpoint {
     public path = 'webhook';
@@ -14,7 +14,6 @@ export class WebhookEndpoint extends ApiEndpoint {
         persis: IPersistence,
     ): Promise<IApiResponse> {
         const sender = await read.getUserReader().getById('rocket.cat');
-        const room = await read.getRoomReader().getById('GENERAL') || {} as IRoom;
 
         if (request.headers['x-github-event'] !== 'push') {
             return this.success();
@@ -26,6 +25,20 @@ export class WebhookEndpoint extends ApiEndpoint {
             payload = JSON.parse(request.content.payload);
         } else {
             payload = request.content;
+        }
+
+        const persistence = new AppPersistence(persis, read.getPersistenceReader());
+
+        const roomId = await persistence.getConnectedRoomId(payload.repository.full_name);
+
+        if (!roomId) {
+            return this.success();
+        }
+
+        const room = await read.getRoomReader().getById(roomId);
+
+        if (!room) {
+            return this.success();
         }
 
         const message = modify.getCreator().startMessage({
